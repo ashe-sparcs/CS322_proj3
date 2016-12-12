@@ -149,6 +149,8 @@ def action_func(q, sigma):
             result[-1][2] = sigma
         elif sigma in ['d', 'z']:
             result[-1][1] += sigma
+        elif sigma == '3':
+            result.append(['', sigma, ''])
         else:
             return None
     # ㄱ + ㅏ + ㄱ + ㅅ + sigma, 그 외에 두가지 경우가 더 있다.
@@ -276,6 +278,24 @@ def action_func(q, sigma):
             result[-2][2] = ''
         else:
             return None
-
-    # None이 아닌 무언가를 리턴해야 한다? 노노 분기에 속하지 않는 녀석은 없으므로(있으면 잘못 짠 것.)
+    # ㄱ + ㅗ + ㅗ + ㅏ + sigma == 구 + ㅏ + sigma, else가 무조건 none이 아니고 그냥 이상한 형태지만 입력이 될 수도 있을 것이다.
+    elif q == 'q27':
+        if sigma == '3':
+            result[-2][1] += result[-1][1]+sigma
+            result.pop()
+        else:
+            return None
+    # ㄱ + ㅏ + ㄹ + ㄴ + 획 + sigma == 갈+ㄷ+sigma
+    elif q == 'q28':
+        if sigma in key_vowel:
+            result[-1][1] = sigma
+        elif sigma == 'z':
+            result[-2][2] += result[-1][0]+sigma
+            result[-1].pop()
+        elif sigma == 'c':
+            result[-1][0] += sigma
+        else:
+            return None
+    # Success
+    return 0
 
