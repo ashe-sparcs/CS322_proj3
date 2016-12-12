@@ -1,4 +1,3 @@
-eng_kor_map = {'1':'ㄱ', '2':'ㄴ', '3':'ㅏ', 'q':'ㄹ', 'w':'ㅁ', 'e':'ㅗ', 'a':'ㅅ', 's':'ㅇ', 'd':'ㅣ', 'z':'.', 'x':'ㅡ', 'c':'='}
 state_transition_dict = {'q19': {'3': 'q5', 'd': 'q6', 'x': 'q8', 'z': 'q23', 'e': 'q7'}, 'q22': {'2': 'q2', 'a': 'q2', 'w': 'q2', '1': 'q1', 'd': 'q6', 'x': 'q8', 's': 'q4', '3': 'q5', 'c': 'q3', 'q': 'q3', 'z': 'q18', 'e': 'q7'}, 'q9': {'2': 'q2', 'a': 'q17', 'w': 'q2', '1': 'q1', 'd': 'q6', 'x': 'q8', 's': 'q4', '3': 'q5', 'c': 'q18', 'q': 'q3', 'z': 'q18', 'e': 'q7'}, 'q17': {'q': 'q3', '2': 'q2', 'a': 'q2', 'w': 'q2', '1': 'q1', '3': 'q5', 'd': 'q6', 'x': 'q8', 's': 'q4', 'z': 'q1', 'e': 'q7'}, 'q14': {'q': 'q3', '2': 'q2', 'a': 'q2', 'w': 'q2', '1': 'q1', '3': 'q5', 'd': 'q6', 'x': 'q8', 's': 'q4', 'z': 'q18', 'e': 'q7'}
 , 'q20': {'3': 'q5', 'd': 'q6', 'x': 'q8', 'z': 'q18', 'e': 'q7'}, 'q1': {'c': 'q3', '3': 'q5', 'd': 'q6', 'x': 'q8', 'z': 'q3', 'e': 'q7'}, 'q8': {'1': 'q9', '2': 'q10', 'a': 'q12', 'w': 'q15', 'q': 'q13', 'd': 'q6', 's': 'q14'}, 'q4': {'3': 'q5', 'd': 'q6', 'x': 'q8', 'z': 'q3', 'e': 'q7'}, 'q23': {'2'
 : 'q2', 'a': 'q2', 'w': 'q2', '1': 'q1', 'd': 'q6', 'x': 'q8', 's': 'q4', '3': 'q5', 'c': 'q3', 'q': 'q3', 'z': 'q3', 'e': 'q7'}, 'q24': {'3': 'q5', 'd': 'q6', 'x': 'q8', 'z': 'q28', 'e': 'q7'}, 'q5': {'q': 'q13', '2': 'q10', 'a': 'q12', 'w': 'q15', '1': 'q9', '3': 'q11', 'd': 'q6', 's': 'q14', 'z': 'q8'
@@ -11,6 +10,7 @@ key_consonant = ['1', '2', 'q', 'w', 'a', 's']
 key_vowel = ['3', 'e', 'd', 'x']
 key_special = ['z', 'c']
 jong_double = ['1a', '2az', '2sz', 'q1', 'qw', 'qwz', 'qa', 'q2zz', 'qwzz', 'qsz', 'wza']
+eng_kor_map = []
 state = ['q0']
 result = []
 batchim = True
@@ -299,3 +299,34 @@ def action_func(q, sigma):
     # Success
     return 0
 
+
+def convert_to_kor(result_eng):
+    result_eng = []
+
+
+
+while True:
+    try:
+        print('Type hangul to get right result. Type invalid hangul or ; to exit')
+        eng_in = input()
+
+        eng_in_temp = []
+
+        for i in range(len(eng_in)):
+            eng_in_temp = eng_in[:i+1]
+            current_state = 'q0'
+            for letter in eng_in_temp:
+                action_func(current_state, letter)
+                current_state = state_transition_func(current_state, letter)
+
+            for geulja in result:
+                if geulja[1] == '' and geulja[2] == '':
+                    print(geulja[0], end='')
+                else:
+                    print(chr(44032 + 588 * consonants.index(geulja[0]) + 28 * jung.index(geulja[1]) + jong.index(geulja[2])), end=''),
+            print('')
+            result = []
+            incomplete = []
+    except:
+        print('exit')
+        break
