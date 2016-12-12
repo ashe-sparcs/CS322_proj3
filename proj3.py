@@ -10,6 +10,7 @@ state_transition_dict = {'q19': {'3': 'q5', 'd': 'q6', 'x': 'q8', 'z': 'q23', 'e
 key_consonant = ['1', '2', 'q', 'w', 'a', 's']
 key_vowel = ['3', 'e', 'd', 'x']
 key_special = ['z', 'c']
+jong_double = ['1a', '2az', '2sz', 'q1', 'qw', 'qwz', 'qa', 'q2zz', 'qwzz', 'qsz', 'wza']
 state = ['q0']
 result = []
 batchim = True
@@ -150,8 +151,131 @@ def action_func(q, sigma):
             result[-1][1] += sigma
         else:
             return None
-    
+    # ㄱ + ㅏ + ㄱ + ㅅ + sigma, 그 외에 두가지 경우가 더 있다.
     elif q == 'q17':
+        if sigma in key_consonant:
+            result.append([sigma, '', ''])
+        elif sigma in key_vowel:
+            # 만약 두번째 받침이 획추가나 쌍자음이 된 상태라면?
+            result.append([result[-1][2][-1], sigma, ''])
+            result[-2][2] = result[-2][2][:-1]
+        elif sigma == 'z':
+            # 획추가한 결과가 겹받침으로 유효하면?
+            if (result[-1][2] + sigma) in jong_double:
+                result[-1][2] += sigma
+            # 그렇지 않으면?
+            else:
+                result.append([result[-1][2][-1] + sigma, '', ''])
+                result[-2][2] = result[-2][2][:-1]
+        elif sigma == 'c':
+            result.append([result[-1][2][-1]+sigma, '', ''])
+            result[-2][2] = result[-2][2][:-1]
+    # ㄱ + ㅏ + ㄱ + 쌍 + sigma == ㄱ + ㅏ + ㄲ + sigma
+    elif q == 'q18':
+        if sigma in key_consonant:
+            result.append([sigma, '', ''])
+        elif sigma in key_vowel:
+            result.append([result[-1][2], sigma, ''])
+            result[-1][2] = ''
+        else:
+            return None
+    # ㄱ + ㅏ + ㄴ + ㅅ + sigma
+    elif q == 'q19':
+        if sigma in key_vowel:
+            result[-1][1] = sigma
+        elif sigma in key_special:
+            result[-1][0] += sigma
+        else:
+            return None
+    # ㄱ + ㅏ + ㄴ + ㅇ + sigma
+    elif q == 'q20':
+        if sigma in key_vowel:
+            result[-1][1] = sigma
+        elif sigma == 'z':
+            result[-1][0] += sigma
+        else:
+            return None
+    # ㄱ + ㅏ + ㄴ + 획 + sigma == ㄱ + ㅏ + ㄷ + sigma
+    elif q == 'q21':
+        if sigma in key_consonant:
+            result.append([sigma, '', ''])
+        elif sigma in key_vowel:
+            result.append([result[-1][2], sigma, ''])
+            result[-1][2] = ''
+        elif sigma == 'z':
+            result[-1][0] += sigma
+        elif sigma == 'c':
+            result.append([result[-1][2] + sigma, '', ''])
+            result[-2][2] = ''
+        else:
+            return None
+    # ㄱ + ㅏ + ㅅ + 획 + sigma == ㄱ + ㅏ + ㅈ + sigma , 21인 경우와 합쳐도 될 거 같다. 만약 여기에 추가할 분기가 없다면
+    elif q == 'q22':
+        if sigma in key_consonant:
+            result.append([sigma, '', ''])
+        elif sigma in key_vowel:
+            result.append([result[-1][2], sigma, ''])
+            result[-1][2] = ''
+        elif sigma == 'z':
+            result[-1][0] += sigma
+        elif sigma == 'c':
+            result.append([result[-1][2]+sigma, '', ''])
+            result[-2][2] = ''
+        else:
+            return None
+    # ㄱ + ㅏ + ㄹ + ㄱ + sigma == ㄱ + ㅏ + ㄺ + sigma
+    elif q == 'q23':
+        if sigma in key_consonant:
+            result.append([sigma, '', ''])
+        elif sigma in key_vowel:
+            # 이거랑 비슷한 부분에 코멘트 해놓은 거랑 같은 문제가 발생?
+            result.append([result[-1][2][-1], sigma, ''])
+            result[-2][2] = result[-2][2][:-1]
+        elif sigma in key_special:
+            result.append([result[-1][2][-1]+sigma, '', ''])
+            result[-2][2] = result[-2][2][:-1]
+        else:
+            return None
+    # ㄱ + ㅏ + ㄹ + ㄴ + sigma
+    elif q == 'q24':
+        if sigma in key_vowel:
+            result[-1][1] = sigma
+        elif sigma == 'z':
+            result[-1][0] += sigma
+        else:
+            return None
+    # ㄱ + ㅏ + ㄹ + ㅁ + sigma == ㄱ + ㅏ + ㄻ + sigma
+    elif q == 'q25':
+        if sigma in key_consonant:
+            result.append([sigma, '', ''])
+        elif sigma in key_vowel:
+            # 이거랑 비슷한 부분에 코멘트 해놓은 거랑 같은 문제가 발생?
+            result.append([result[-1][2][-1], sigma, ''])
+            result[-2][2] = result[-2][2][:-1]
+        elif sigma == 'z':
+            result[-1][2] += sigma
+        elif sigma == 'c':
+            result.append([result[-1][2] + sigma, '', ''])
+            result[-2][2] = result[-2][2][:-1]
+        else:
+            return None
+    # ㄱ + ㅏ + ㅁ + 획 + sigma == 갑 + sigma
+    elif q == 'q26':
+        if sigma in key_consonant:
+            if sigma == 'a':
+                result[-1][2] += sigma
+            else:
+                result.append([sigma, '', ''])
+        elif sigma in key_vowel:
+            result.append([result[-1][2], sigma, ''])
+            result[-2][2] = ''
+        elif sigma == 'z':
+            result[-1][2] += sigma
+        elif sigma == 'c':
+            result.append([result[-1][2]+sigma, '', ''])
+            result[-2][2] = ''
+        else:
+            return None
 
-    # None이 아닌 무언가를 리턴해야 한다?
+    # None이 아닌 무언가를 리턴해야 한다? 노노 분기에 속하지 않는 녀석은 없으므로(있으면 잘못 짠 것.)
 
