@@ -1,3 +1,4 @@
+# coding=utf-8
 state_transition_dict = {'q19': {'3': 'q5', 'd': 'q6', 'x': 'q8', 'z': 'q23', 'e': 'q7'}, 'q22': {'2': 'q2', 'a': 'q2', 'w': 'q2', '1': 'q1', 'd': 'q6', 'x': 'q8', 's': 'q4', '3': 'q5', 'c': 'q3', 'q': 'q3', 'z': 'q18', 'e': 'q7'}, 'q9': {'2': 'q2', 'a': 'q17', 'w': 'q2', '1': 'q1', 'd': 'q6', 'x': 'q8', 's': 'q4', '3': 'q5', 'c': 'q18', 'q': 'q3', 'z': 'q18', 'e': 'q7'}, 'q17': {'q': 'q3', '2': 'q2', 'a': 'q2', 'w': 'q2', '1': 'q1', '3': 'q5', 'd': 'q6', 'x': 'q8', 's': 'q4', 'z': 'q1', 'e': 'q7'}, 'q14': {'q': 'q3', '2': 'q2', 'a': 'q2', 'w': 'q2', '1': 'q1', '3': 'q5', 'd': 'q6', 'x': 'q8', 's': 'q4', 'z': 'q18', 'e': 'q7'}
 , 'q20': {'3': 'q5', 'd': 'q6', 'x': 'q8', 'z': 'q18', 'e': 'q7'}, 'q1': {'c': 'q3', '3': 'q5', 'd': 'q6', 'x': 'q8', 'z': 'q3', 'e': 'q7'}, 'q8': {'1': 'q9', '2': 'q10', 'a': 'q12', 'w': 'q15', 'q': 'q13', 'd': 'q6', 's': 'q14'}, 'q4': {'3': 'q5', 'd': 'q6', 'x': 'q8', 'z': 'q3', 'e': 'q7'}, 'q23': {'2'
 : 'q2', 'a': 'q2', 'w': 'q2', '1': 'q1', 'd': 'q6', 'x': 'q8', 's': 'q4', '3': 'q5', 'c': 'q3', 'q': 'q3', 'z': 'q3', 'e': 'q7'}, 'q24': {'3': 'q5', 'd': 'q6', 'x': 'q8', 'z': 'q28', 'e': 'q7'}, 'q5': {'q': 'q13', '2': 'q10', 'a': 'q12', 'w': 'q15', '1': 'q9', '3': 'q11', 'd': 'q6', 's': 'q14', 'z': 'q8'
@@ -10,7 +11,7 @@ key_consonant = ['1', '2', 'q', 'w', 'a', 's']
 key_vowel = ['3', 'e', 'd', 'x']
 key_special = ['z', 'c']
 cho = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ']
-cho_key = ['1', '1c', '2', '2z', '2c', 'q', 'w', 'wz', 'wc', 'a', 'ac', 's', 'az', 'ac', 'azz', '1z', '2zz', 'wzz', 'sz']
+cho_key = ['1', '1c', '2', '2z', '2zc', 'q', 'w', 'wz', 'wzc', 'a', 'ac', 's', 'az', 'azc', 'azz', '1z', '2zz', 'wzz', 'sz']
 jung = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅗㅏ', 'ㅗㅐ', 'ㅗㅣ', 'ㅛ', 'ㅜ', 'ㅜㅓ', 'ㅜㅔ', 'ㅜㅣ', 'ㅠ', 'ㅡ', 'ㅡㅣ', 'ㅣ']
 jung_key = ['3', '3d', '3z', '3zd', '33', '33d', '33z', '33zd', 'e', 'e3', 'e3d', 'ed', 'ez', 'ee', 'ee33', 'ee33d', 'eed', 'eez', 'x', 'xd', 'd']
 jong = ['', 'ㄱ', 'ㄲ', 'ㄱㅅ', 'ㄴ', 'ㄴㅈ', 'ㄴㅎ', 'ㄷ', 'ㄹ', 'ㄹㄱ', 'ㄹㅁ', 'ㄹㅂ', 'ㄹㅅ', 'ㄹㅌ', 'ㄹㅍ', 'ㄹㅎ', 'ㅁ', 'ㅂ', 'ㅂㅅ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ']
@@ -90,6 +91,8 @@ def action_func(q, sigma):
     elif q == 'q9':
         if sigma in ['a', 'z', 'c']:
             result[-1][2] += sigma
+        elif sigma in key_consonant:
+            result.append([sigma, '', ''])
         elif sigma in key_vowel:
             result.append([result[-1][2], sigma, ''])
             result[-2][2] = ''
@@ -99,6 +102,11 @@ def action_func(q, sigma):
     elif q == 'q10':
         if sigma in ['a', 'z']:
             result[-1][2] += sigma
+        elif sigma in key_consonant:
+            if result[-1][2]+sigma in jong_double:
+                result[-1][2] += sigma
+            else:
+                result.append([sigma, '', ''])
         elif sigma in key_vowel:
             result.append([result[-1][2], sigma, ''])
             result[-2][2] = ''
@@ -116,6 +124,8 @@ def action_func(q, sigma):
     elif q == 'q12':
         if sigma in ['z', 'c']:
             result[-1][2] += sigma
+        elif sigma in key_consonant:
+            result.append([sigma, '', ''])
         elif sigma in key_vowel:
             result.append([result[-1][2], sigma, ''])
             result[-2][2] = ''
@@ -125,6 +135,8 @@ def action_func(q, sigma):
     elif q == 'q13':
         if sigma in ['1', 'a', 'w']:
             result[-1][2] += sigma
+        elif sigma in key_consonant:
+            result.append([sigma, '', ''])
         elif sigma in key_vowel:
             result.append([result[-1][2], sigma, ''])
             result[-2][2] = ''
@@ -134,6 +146,8 @@ def action_func(q, sigma):
     elif q == 'q14':
         if sigma in ['z']:
             result[-1][2] += sigma
+        elif sigma in key_consonant:
+            result.append([sigma, '', ''])
         elif sigma in key_vowel:
             result.append([result[-1][2], sigma, ''])
             result[-2][2] = ''
@@ -144,6 +158,8 @@ def action_func(q, sigma):
         if sigma in key_vowel:
             result.append([result[-1][2], sigma, ''])
             result[-2][2] = ''
+        elif sigma in key_consonant:
+            result.append([sigma, '', ''])
         elif sigma in ['z']:
             result[-1][2] += sigma
         else:
@@ -179,18 +195,27 @@ def action_func(q, sigma):
             result[-2][2] = result[-2][2][:-1]
     # ㄱ + ㅏ + ㄱ + 쌍 + sigma == ㄱ + ㅏ + ㄲ + sigma
     elif q == 'q18':
-        if sigma in key_consonant:
-            result.append([sigma, '', ''])
-        elif sigma in key_vowel:
-            result.append([result[-1][2], sigma, ''])
-            result[-1][2] = ''
+        if result[-1][1] == '' and result[-1][2] == '':
+            if sigma in key_vowel:
+                result[-1][1] = sigma
+            else:
+                return None
         else:
-            return None
+            if sigma in key_consonant:
+                result.append([sigma, '', ''])
+            elif sigma in key_vowel:
+                result.append([result[-1][2], sigma, ''])
+                result[-2][2] = ''
+            else:
+                return None
     # ㄱ + ㅏ + ㄴ + ㅅ + sigma
     elif q == 'q19':
         if sigma in key_vowel:
             result[-1][1] = sigma
-        elif sigma in key_special:
+        elif sigma == 'z':
+            result[-2][2] += result[-1][0]+sigma
+            result.pop()
+        elif sigma == 'c':
             result[-1][0] += sigma
         else:
             return None
@@ -199,7 +224,8 @@ def action_func(q, sigma):
         if sigma in key_vowel:
             result[-1][1] = sigma
         elif sigma == 'z':
-            result[-1][0] += sigma
+            result[-2][2] += result[-1][0]+sigma
+            result.pop()
         else:
             return None
     # ㄱ + ㅏ + ㄴ + 획 + sigma == ㄱ + ㅏ + ㄷ + sigma
@@ -208,9 +234,9 @@ def action_func(q, sigma):
             result.append([sigma, '', ''])
         elif sigma in key_vowel:
             result.append([result[-1][2], sigma, ''])
-            result[-1][2] = ''
+            result[-2][2] = ''
         elif sigma == 'z':
-            result[-1][0] += sigma
+            result[-1][2] += sigma
         elif sigma == 'c':
             result.append([result[-1][2] + sigma, '', ''])
             result[-2][2] = ''
@@ -222,7 +248,7 @@ def action_func(q, sigma):
             result.append([sigma, '', ''])
         elif sigma in key_vowel:
             result.append([result[-1][2], sigma, ''])
-            result[-1][2] = ''
+            result[-2][2] = ''
         elif sigma == 'z':
             result[-1][0] += sigma
         elif sigma == 'c':
@@ -248,7 +274,8 @@ def action_func(q, sigma):
         if sigma in key_vowel:
             result[-1][1] = sigma
         elif sigma == 'z':
-            result[-1][0] += sigma
+            result[-2][2] += result[-1][0]+sigma
+            result.pop()
         else:
             return None
     # ㄱ + ㅏ + ㄹ + ㅁ + sigma == ㄱ + ㅏ + ㄻ + sigma
@@ -296,7 +323,7 @@ def action_func(q, sigma):
             result[-1][1] = sigma
         elif sigma == 'z':
             result[-2][2] += result[-1][0]+sigma
-            result[-1].pop()
+            result.pop()
         elif sigma == 'c':
             result[-1][0] += sigma
         else:
@@ -305,32 +332,46 @@ def action_func(q, sigma):
     return 0
 
 
-def convert_to_kor(result_eng):
-    pass
+def convert_to_kor(nara_char):
+    kor_char = []
+    if nara_char[0] == '' and nara_char[2] == '':
+        kor_char = ['', jung[jung_key.index(nara_char[1])], '']
+    elif nara_char[1] == '' and nara_char[2] == '':
+        kor_char = [cho[cho_key.index(nara_char[0])], '', '']
+    elif not nara_char[0] == '' and not nara_char[1] == '':
+        kor_char.append(cho[cho_key.index(nara_char[0])])
+        kor_char.append(jung[jung_key.index(nara_char[1])])
+        kor_char.append(jong[jong_key.index(nara_char[2])])
+    else:
+        print('convert error')
+    return kor_char
 
 
 while True:
-    try:
-        print('Type hangul to get right result. Type invalid hangul or ; to exit')
-        eng_in = input()
+    print('Type hangul to get right result. Type invalid hangul or ; to exit')
+    eng_in = input()
 
-        eng_in_temp = []
+    eng_in_temp = []
 
-        for i in range(len(eng_in)):
-            eng_in_temp = eng_in[:i+1]
-            current_state = 'q0'
-            for letter in eng_in_temp:
-                action_func(current_state, letter)
-                current_state = state_transition_func(current_state, letter)
-
-            for geulja in result:
-                if geulja[1] == '' and geulja[2] == '':
-                    print(geulja[0], end='')
-                else:
-                    print(chr(44032 + 588 * consonants.index(geulja[0]) + 28 * jung.index(geulja[1]) + jong.index(geulja[2])), end=''),
-            print('')
-            result = []
-            incomplete = []
-    except:
-        print('exit')
-        break
+    for i in range(len(eng_in)):
+        eng_in_temp = eng_in[:i+1]
+        current_state = 'q0'
+        for letter in eng_in_temp:
+            print(current_state, end=', ')
+            action_func(current_state, letter)
+            current_state = state_transition_func(current_state, letter)
+        print('')
+        print([convert_to_kor(x) for x in result])
+        for geulja in result:
+            if geulja[1] == '' and geulja[2] == '':
+                pass
+                print(cho[cho_key.index(geulja[0])], end='')
+            elif geulja[0] == '' and geulja[2] == '':
+                print(jung[jung_key.index(geulja[1])], end='')
+            else:
+                print(chr(44032 + 588 * cho_key.index(geulja[0]) + 28 * jung_key.index(geulja[1]) + jong_key.index(geulja[2])), end=''),
+        print('')
+        result = []
+        incomplete = []
+    # print('exit')
+    # break
