@@ -9,8 +9,13 @@ state_transition_dict = {'q19': {'3': 'q5', 'd': 'q6', 'x': 'q8', 'z': 'q23', 'e
 key_consonant = ['1', '2', 'q', 'w', 'a', 's']
 key_vowel = ['3', 'e', 'd', 'x']
 key_special = ['z', 'c']
+cho = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ']
+cho_key = ['1', '1c', '2', '2z', '2c', 'q', 'w', 'wz', 'wc', 'a', 'ac', 's', 'az', 'ac', 'azz', '1z', '2zz', 'wzz', 'sz']
+jung = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅗㅏ', 'ㅗㅐ', 'ㅗㅣ', 'ㅛ', 'ㅜ', 'ㅜㅓ', 'ㅜㅔ', 'ㅜㅣ', 'ㅠ', 'ㅡ', 'ㅡㅣ', 'ㅣ']
+jung_key = ['3', '3d', '3z', '3zd', '33', '33d', '33z', '33zd', 'e', 'e3', 'e3d', 'ed', 'ez', 'ee', 'ee33', 'ee33d', 'eed', 'eez', 'x', 'xd', 'd']
+jong = ['', 'ㄱ', 'ㄲ', 'ㄱㅅ', 'ㄴ', 'ㄴㅈ', 'ㄴㅎ', 'ㄷ', 'ㄹ', 'ㄹㄱ', 'ㄹㅁ', 'ㄹㅂ', 'ㄹㅅ', 'ㄹㅌ', 'ㄹㅍ', 'ㄹㅎ', 'ㅁ', 'ㅂ', 'ㅂㅅ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ']
+jong_key = ['', '1', '1c', '1a', '2', '2az', '2sz', '2z', 'q', 'q1', 'qw', 'qwz', 'qa', 'q2zz', 'qwzz', 'qsz', 'w', 'wz', 'wza', 'a', 'ac', 's', 'az', 'azz', '1z', '2zz', 'wzz', 'sz']
 jong_double = ['1a', '2az', '2sz', 'q1', 'qw', 'qwz', 'qa', 'q2zz', 'qwzz', 'qsz', 'wza']
-eng_kor_map = []
 state = ['q0']
 result = []
 batchim = True
@@ -301,8 +306,7 @@ def action_func(q, sigma):
 
 
 def convert_to_kor(result_eng):
-    result_eng = []
-
+    pass
 
 
 while True:
