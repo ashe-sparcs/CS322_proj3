@@ -985,22 +985,22 @@ while True:
         break
     eng_in_temp = []
     # DEBUG
-    # for i in range(len(eng_in)):
+    for i in range(len(eng_in)):
     # SUBMISSION
-    for i in range(len(eng_in)-1, len(eng_in)):
+    #for i in range(len(eng_in)-1, len(eng_in)):
         eng_in_temp = eng_in[:i+1]
         current_state = 'q0'
         for letter in eng_in_temp:
-            print(current_state, end=', ')
+            # print(current_state, end=', ')
             # print(state[-5:], end=' | ')
             if batchim:
                 action_func(current_state, letter)
             else:
                 action_func_chosung(current_state, letter)
             current_state = state_transition_func(current_state, letter)
-        print('')
-        print(result, end=' vs ')
-        print([convert_to_kor(x) for x in result])
+        # print('')
+        # print(result, end=' vs ')
+        # print([convert_to_kor(x) for x in result])
         for geulja in result:
             if geulja[1] == '' and geulja[2] == '':
                 pass
@@ -1013,5 +1013,4 @@ while True:
         result = []
         state = ['q0']
         incomplete = []
-    # print('exit')
-    # break
+print('bye')
