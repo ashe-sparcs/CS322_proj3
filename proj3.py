@@ -568,11 +568,19 @@ def action_func_chosung(q, sigma):
             else:
                 erased = len(result[-1][0])
                 result.pop()
-                if not result == [] and result[-1][2] in jong_double:
+                if result == []:
+                    pass
+                elif result[-1][2] in jong_double:
                     jong_first = jong_double_first[jong_double.index(result[-1][2])]
                     jong_second = jong_double_second[jong_double.index(result[-1][2])]
                     result[-1][2] = jong_first
                     result.append([jong_second, '', ''])
+                elif result[-1][2] in jong_key:
+                    result.append([result[-1][2], '', ''])
+                    result[-2][2] = ''
+                else:
+                    return None
+
         # ㄱ + ㅏ + sigma
         # ㄱ + ㅣ + sigma
         # ㄱ + ㅗ + sigma
