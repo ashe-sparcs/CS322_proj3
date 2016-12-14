@@ -58,50 +58,17 @@ batchim_double_second = ['a', 'az', 'sz', '1', 'w', 'wz', 'a', '2zz', 'wzz', 'sz
 
 state = ['q0']
 result = []
+erased = 0
 #batchim = False
 batchim = True
 
 
 def state_transition_func(q, sigma):
-    global state
+    global state, erased
     if sigma == '<':
-        # 초성으로 끝나는 경우
-        if result[-1][1] == '' and result[-1][2] == '':
+        for k in range(erased):
             state.pop()
-            return state[-1]
-        # 이중모음 중성으로 끝나는 경우
-        elif result[-1][1] in jung_double and result[-1][2] == '':
-            jung_first = jung_double_first[jung_double.index(result[-1][1])]
-            jung_second = jung_double_second[jung_double.index(result[-1][1])]
-            for j in range(len(jung_second)):
-                state.pop()
-            return state[-1]
-        # 삼중모음(ㅞ, ㅙ) 중성으로 끝나는 경우
-        elif result[-1][1] in jung_triple and result[-1][2] == '':
-            jung_first = jung_triple_first[jung_triple.index(result[-1][1])]
-            jung_second = jung_triple_second[jung_triple.index(result[-1][1])]
-            jung_third = jung_triple_third[jung_triple.index(result[-1][1])]
-            for j in range(len(jung_third)):
-                state.pop()
-            return state[-1]
-        # 단일모음 중성으로 끝나는 경우
-        elif result[-1][1] in jung_key and result[-1][2] == '':
-            for j in range(len(result[-1][1])):
-                state.pop()
-            return state[-1]
-        # 겹받침, 쌍자음 받침으로 끝나는 경우 !!!주의 jong_double을 쓰면 안된다. 쌍자음 받침을 포함하지 않기 때문.
-        elif result[-1][2] in batchim_double:
-            batchim_first = batchim_double_first[batchim_double.index(result[-1][2])]
-            batchim_second = batchim_double_second[batchim_double.index(result[-1][2])]
-            for j in range(len(batchim_second)):
-                state.pop()
-            return state[-1]
-        elif result[-1][2] in jong_key:
-            for j in range(len(result[-1][2])):
-                state.pop()
-            return state[-1]
-        else:
-            return None
+        return state[-1]
     else:
         # returns None if not found
         next_state = state_transition_dict[q].get(sigma)
@@ -111,311 +78,105 @@ def state_transition_func(q, sigma):
 
 # 받침우선
 def action_func(q, sigma):
+    global erased
     if sigma == '<':
+        erased = 0
         # Initial state
         if q == 'q0':
             return None
         # 초성 ㄱ, ㄴ, ㅁ, ㅅ, ㄹ, ㅇ
-        elif q in ['q1', 'q2', 'q3', 'q4']:
-            result.pop()
-        # ㄱ + ㅏ + sigma ㄱ + ㅣ + sigma ㄱ + ㅗ + sigma ㄱ + ㅡ + sigma
-        elif q in ['q5', 'q6', 'q7', 'q8']:
-            result[-1][1] = ''
-        # ㄱ + ㅏ + ㄱ + sigma ㄱ + ㅏ + ㄴ + sigma ㄱ + ㅏ + ㅅ + sigma ㄱ + ㅏ + ㄹ + sigma ㄱ + ㅏ + ㅇ + sigma ㄱ + ㅏ + ㅁ + sigma ㄱ + ㅏ + ㄴ + 획 + sigma == ㄱ + ㅏ + ㄷ + sigma ㄱ + ㅏ + ㅅ + 획 + sigma == ㄱ + ㅏ + ㅈ + sigma ㄱ + ㅏ + ㅁ + 획 + sigma == 갑 + sigma
-        # 단일 받침
-        elif q == ['q9', 'q10', 'q12', 'q13', 'q14', 'q15', 'q21', 'q22', 'q26']:
-            result[-1][2] = ''
-        # ㄱ + ㅏ + ㄴ + sigma
-        elif q == 'q10':
-            if sigma in key_special:
-                result[-1][2] += sigma
-            elif sigma in key_consonant:
-                if result[-1][2] + sigma in jong_double:
-                    result[-1][2] += sigma
-                else:
-                    result.append([sigma, '', ''])
-            elif sigma in key_vowel:
-                result.append([result[-1][2], sigma, ''])
-                result[-2][2] = ''
+        # ㄱ + ㅏ + ㄴ + ㅅ + sigma
+        # ㄱ + ㅏ + ㄴ + ㅇ + sigma
+        # ㄱ + ㅏ + ㄹ + ㄴ + sigma
+        # ㄱ + ㅗ + ㅗ + ㅏ + sigma == 구 + ㅏ + sigma, else가 무조건 none이 아니고 그냥 이상한 형태지만 입력이 될 수도 있을 것이다.
+        # ㄱ + ㅏ + ㄹ + ㄴ + 획 + sigma == 갈+ㄷ+sigma
+        elif q in ['q1', 'q2', 'q3', 'q4', 'q19', 'q20', 'q24', 'q27', 'q28']:
+            if 'c' in result[-1][0]:
+                erased = 1
+                result[-1][0] = result[-1][0][:-1]
             else:
-                return None
+                erased = len(result[-1][0])
+                result.pop()
+        # ㄱ + ㅏ + sigma
+        # ㄱ + ㅣ + sigma
+        # ㄱ + ㅗ + sigma
+        # ㄱ + ㅡ + sigma
         # ㄱ + ㅏ + ㅏ + sigma == ㄱ + ㅓ + sigma
-        elif q == 'q11':
-            if sigma in key_consonant:
-                result[-1][2] = sigma
-            elif sigma in ['d', 'z']:
-                result[-1][1] += sigma
-            else:
-                return None
-        # ㄱ + ㅏ + ㅅ + sigma
-        elif q == 'q12':
-            if sigma in ['z', 'c']:
-                result[-1][2] += sigma
-            elif sigma in key_consonant:
-                result.append([sigma, '', ''])
-            elif sigma in key_vowel:
-                result.append([result[-1][2], sigma, ''])
-                result[-2][2] = ''
-            else:
-                return None
-        # ㄱ + ㅏ + ㄹ + sigma
-        elif q == 'q13':
-            if sigma in ['1', 'a', 'w']:
-                result[-1][2] += sigma
-            elif sigma in key_consonant:
-                result.append([sigma, '', ''])
-            elif sigma in key_vowel:
-                result.append([result[-1][2], sigma, ''])
-                result[-2][2] = ''
-            else:
-                return None
-        # ㄱ + ㅏ + ㅇ + sigma
-        elif q == 'q14':
-            if sigma in ['z']:
-                result[-1][2] += sigma
-            elif sigma in key_consonant:
-                result.append([sigma, '', ''])
-            elif sigma in key_vowel:
-                result.append([result[-1][2], sigma, ''])
-                result[-2][2] = ''
-            else:
-                return None
-        # ㄱ + ㅏ + ㅁ + sigma
-        elif q == 'q15':
-            if sigma in key_vowel:
-                result.append([result[-1][2], sigma, ''])
-                result[-2][2] = ''
-            elif sigma in key_consonant:
-                result.append([sigma, '', ''])
-            elif sigma in ['z']:
-                result[-1][2] += sigma
-            else:
-                return None
         # ㄱ + ㅗ + ㅗ + sigma == ㄱ + ㅜ + sigma
-        elif q == 'q16':
-            if sigma in key_consonant:
-                result[-1][2] = sigma
-            elif sigma in ['d', 'z']:
-                result[-1][1] += sigma
-            elif sigma == '3':
-                result.append(['', sigma, ''])
-            else:
-                return None
+        elif q in ['q5', 'q6', 'q7', 'q8', 'q11', 'q16']:
+            if result[-1][1] in jung_double:
+                jung_first = jung_double_first[jung_double.index(result[-1][1])]
+                jung_second = jung_double_second[jung_double.index(result[-1][1])]
+                erased = len(jung_second)
+                result[-1][1] = jung_first
+            elif result[-1][1] in jung_triple:
+                jung_first = jung_triple_first[jung_triple.index(result[-1][1])]
+                jung_second = jung_triple_second[jung_triple.index(result[-1][1])]
+                jung_third = jung_triple_third[jung_triple.index(result[-1][1])]
+                erased = len(jung_third)
+                result[-1][1] = jung_first + jung_second
+            elif result[-1][1] in jung_key:
+                erased = len(result[-1][1])
+                result[-1][1] = ''
+                if len(result) == 1:
+                    pass
+                elif result[-2][2]+result[-1][0] in jong_key:
+                    result[-2][2] += result[-1][0]
+                    result.pop()
+        # 단일 받침
+        # ㄱ + ㅏ + ㄱ + sigma
+        # ㄱ + ㅏ + ㄴ + sigma
+        # ㄱ + ㅏ + ㅅ + sigma
+        # ㄱ + ㅏ + ㄹ + sigma
+        # ㄱ + ㅏ + ㅇ + sigma
+        # ㄱ + ㅏ + ㅁ + sigma
+        # ㄱ + ㅏ + ㄴ + 획 + sigma == ㄱ + ㅏ + ㄷ + sigma
+        # ㄱ + ㅏ + ㅁ + 획 + sigma == 갑 + sigma
+        elif q in ['q9', 'q10', 'q12', 'q13', 'q14', 'q15', 'q21', 'q26']:
+            erased = len(result[-1][2])
+            result[-1][2] = ''
+
         # ㄱ + ㅏ + ㄱ + ㅅ + sigma, 그 외에 두가지 경우가 더 있다.
-        elif q == 'q17':
-            if sigma in key_consonant:
-                result.append([sigma, '', ''])
-            elif sigma in key_vowel:
-                # 만약 두번째 받침이 획추가나 쌍자음이 된 상태라면?
-                jong_first = jong_double_first[jong_double.index(result[-1][2])]
-                jong_second = jong_double_second[jong_double.index(result[-1][2])]
-                result.append([jong_second, sigma, ''])
-                result[-2][2] = jong_first
-            elif sigma == 'z':
-                # 획추가한 결과가 겹받침으로 유효하면?
-                if (result[-1][2] + sigma) in jong_double:
-                    result[-1][2] += sigma
-                # 그렇지 않으면?
-                else:
-                    result.append([result[-1][2][-1] + sigma, '', ''])
-                    result[-2][2] = result[-2][2][:-1]
-            elif sigma == 'c':
-                result.append([result[-1][2][-1] + sigma, '', ''])
-                result[-2][2] = result[-2][2][:-1]
+        # ㄱ + ㅏ + ㄹ + ㄱ + sigma == ㄱ + ㅏ + ㄺ + sigma
+        # ㄱ + ㅏ + ㄹ + ㅁ + sigma == ㄱ + ㅏ + ㄻ + sigma
+        elif q in ['q17', 'q23', 'q25']:
+            batchim_first = batchim_double_first[batchim_double.index(result[-1][2])]
+            batchim_second = batchim_double_second[batchim_double.index(result[-1][2])]
+            erased = len(batchim_second)
+            result[-1][2] = batchim_first
         # ㄱ + ㅏ + ㄱ + 쌍 + sigma == ㄱ + ㅏ + ㄲ + sigma
         elif q == 'q18':
             if result[-1][1] == '' and result[-1][2] == '':
-                if sigma in key_vowel:
-                    result[-1][1] = sigma
-                else:
-                    return None
+                erased = 1
+                result.pop()
             # 쌍자음 받침
             elif result[-1][2] in ['1c', 'ac']:
-                if sigma in key_consonant:
-                    result.append([sigma, '', ''])
-                elif sigma in key_vowel:
-                    result.append([result[-1][2], sigma, ''])
-                    result[-2][2] = ''
-                else:
-                    return None
+                batchim_first = batchim_double_first[batchim_double.index(result[-1][2])]
+                batchim_second = batchim_double_second[batchim_double.index(result[-1][2])]
+                erased = len(batchim_second)
+                result[-1][2] = batchim_first
             # 겹받침
             elif result[-1][2] in jong_double:
-                jong_double_idx = jong_double.index(result[-1][2])
-                jong_first = jong_double_first[jong_double_idx]
-                jong_second = jong_double_second[jong_double_idx]
-                if sigma in key_consonant:
-                    result.append([sigma, '', ''])
-                elif sigma in key_vowel:
-                    result.append([jong_second, sigma, ''])
-                    result[-2][2] = jong_first
-                elif sigma == 'z':
-                    if result[-1][2] + sigma in jong_double:
-                        result[-1][2] += sigma
-                    elif jong_second + sigma in cho_key:
-                        result.append([jong_second + sigma, '', ''])
-                        result[-2][2] = jong_first
-                    else:
-                        return None
-                # sigma is c(쌍자음)
-                else:
-                    if jong_second + sigma in cho_key:
-                        result.append([jong_second + sigma, '', ''])
-                        result[-2][2] = jong_first
-                    else:
-                        return None
+                batchim_first = batchim_double_first[batchim_double.index(result[-1][2])]
+                batchim_second = batchim_double_second[batchim_double.index(result[-1][2])]
+                erased = len(batchim_second)
+                result[-1][2] = batchim_first
             # 마지막 글자의 종성이 겹받침도 아니고 쌍자음도 아니다.
             elif result[-1][2] in jong_key:
-                if sigma in key_vowel:
-                    result.append([result[-1][2], sigma, ''])
-                    result[-2][2] = ''
-                elif sigma in key_consonant:
-                    result.append([sigma, '', ''])
-                elif sigma in key_special:
-                    if result[-1][2] + sigma in jong_key:
-                        result[-1][2] += sigma
-                    else:
-                        result.append([result[-1][2] + sigma, '', ''])
-                        result[-2][2] = ''
-                else:
-                    return None
-            else:
-                return None
-        # ㄱ + ㅏ + ㄴ + ㅅ + sigma
-        elif q == 'q19':
-            if sigma in key_vowel:
-                result[-1][1] = sigma
-            elif sigma == 'z':
-                result[-2][2] += result[-1][0] + sigma
-                result.pop()
-            elif sigma == 'c':
-                result[-1][0] += sigma
-            else:
-                return None
-        # ㄱ + ㅏ + ㄴ + ㅇ + sigma
-        elif q == 'q20':
-            if sigma in key_vowel:
-                result[-1][1] = sigma
-            elif sigma == 'z':
-                result[-2][2] += result[-1][0] + sigma
-                result.pop()
-            else:
-                return None
-        # ㄱ + ㅏ + ㄴ + 획 + sigma == ㄱ + ㅏ + ㄷ + sigma
-        elif q == 'q21':
-            if sigma in key_consonant:
-                result.append([sigma, '', ''])
-            elif sigma in key_vowel:
-                result.append([result[-1][2], sigma, ''])
-                result[-2][2] = ''
-            elif sigma == 'z':
-                result[-1][2] += sigma
-            elif sigma == 'c':
-                result.append([result[-1][2] + sigma, '', ''])
-                result[-2][2] = ''
+                erased = len(result[-1][2])
+                result[-1][2] = ''
             else:
                 return None
         # ㄱ + ㅏ + ㅅ + 획 + sigma == ㄱ + ㅏ + ㅈ + sigma , 21인 경우와 합쳐도 될 거 같다. 만약 여기에 추가할 분기가 없다면. % 있어~
         elif q == 'q22':
             if result[-1][2] in jong_double:
-                jong_first = jong_double_first[jong_double.index(result[-1][2])]
-                jong_second = jong_double_second[jong_double.index(result[-1][2])]
-                if sigma in key_consonant:
-                    result.append([sigma, '', ''])
-                elif sigma in key_vowel:
-                    result.append([jong_second, sigma, ''])
-                    result[-2][2] = jong_first
-                elif sigma == 'z':
-                    result[-1][0] += sigma
-                elif sigma == 'c':
-                    result.append([jong_second + sigma, '', ''])
-                    result[-2][2] = jong_first
-                else:
-                    return None
+                batchim_first = batchim_double_first[batchim_double.index(result[-1][2])]
+                batchim_second = batchim_double_second[batchim_double.index(result[-1][2])]
+                erased = len(batchim_second)
+                result[-1][2] = batchim_first
             elif result[-1][2] in jong_key:
-                if sigma in key_consonant:
-                    result.append([sigma, '', ''])
-                elif sigma in key_vowel:
-                    result.append([result[-1][2], sigma, ''])
-                    result[-2][2] = ''
-                elif sigma == 'z':
-                    result[-1][0] += sigma
-                elif sigma == 'c':
-                    result.append([result[-1][2] + sigma, '', ''])
-                    result[-2][2] = ''
-                else:
-                    return None
-            else:
-                return None
-        # ㄱ + ㅏ + ㄹ + ㄱ + sigma == ㄱ + ㅏ + ㄺ + sigma
-        elif q == 'q23':
-            jong_first = jong_double_first[jong_double.index(result[-1][2])]
-            jong_second = jong_double_second[jong_double.index(result[-1][2])]
-            if sigma in key_consonant:
-                result.append([sigma, '', ''])
-            elif sigma in key_vowel:
-                # 이거랑 비슷한 부분에 코멘트 해놓은 거랑 같은 문제가 발생?
-                result.append([jong_second, sigma, ''])
-                result[-2][2] = jong_first
-            elif sigma in key_special:
-                result.append([jong_second + sigma, '', ''])
-                result[-2][2] = jong_first
-            else:
-                return None
-        # ㄱ + ㅏ + ㄹ + ㄴ + sigma
-        elif q == 'q24':
-            if sigma in key_vowel:
-                result[-1][1] = sigma
-            elif sigma == 'z':
-                result[-1][0] += sigma
-            else:
-                return None
-        # ㄱ + ㅏ + ㄹ + ㅁ + sigma == ㄱ + ㅏ + ㄻ + sigma
-        elif q == 'q25':
-            if sigma in key_consonant:
-                result.append([sigma, '', ''])
-            elif sigma in key_vowel:
-                # 이거랑 비슷한 부분에 코멘트 해놓은 거랑 같은 문제가 발생?
-                jong_first = jong_double_first[jong_double.index(result[-1][2])]
-                jong_second = jong_double_second[jong_double.index(result[-1][2])]
-                result.append([jong_second, sigma, ''])
-                result[-2][2] = jong_first
-            elif sigma == 'z':
-                result[-1][2] += sigma
-            else:
-                return None
-        # ㄱ + ㅏ + ㅁ + 획 + sigma == 갑 + sigma
-        elif q == 'q26':
-            if sigma in key_consonant:
-                if sigma == 'a':
-                    result[-1][2] += sigma
-                else:
-                    result.append([sigma, '', ''])
-            elif sigma in key_vowel:
-                result.append([result[-1][2], sigma, ''])
-                result[-2][2] = ''
-            elif sigma == 'z':
-                result[-1][2] += sigma
-            elif sigma == 'c':
-                result.append([result[-1][2] + sigma, '', ''])
-                result[-2][2] = ''
-            else:
-                return None
-        # ㄱ + ㅗ + ㅗ + ㅏ + sigma == 구 + ㅏ + sigma, else가 무조건 none이 아니고 그냥 이상한 형태지만 입력이 될 수도 있을 것이다.
-        elif q == 'q27':
-            if sigma == '3':
-                result[-2][1] += result[-1][1] + sigma
-                result.pop()
-            else:
-                return None
-        # ㄱ + ㅏ + ㄹ + ㄴ + 획 + sigma == 갈+ㄷ+sigma
-        elif q == 'q28':
-            if sigma in key_vowel:
-                result[-1][1] = sigma
-            elif sigma == 'z':
-                result[-2][2] += result[-1][0] + sigma
-                result.pop()
-            elif sigma == 'c':
-                result[-1][0] += sigma
+                erased = len(result[-1][2])
+                result[-1][2] = ''
             else:
                 return None
         # Success
@@ -788,243 +549,323 @@ def action_func(q, sigma):
 
 
 def action_func_chosung(q, sigma):
-    # Initial state
-    if q == 'q0':
-        if sigma in key_consonant:
-            result.append([sigma, '', ''])
-        else:
+    global erased
+    if sigma == '<':
+        erased = 0
+        # Initial state
+        if q == 'q0':
             return None
-    # 초성 ㄱ, ㄴ, ㅁ, ㅅ
-    elif q in ['q1', 'q2']:
-        if sigma in key_vowel:
-            result[-1][1] = sigma
-        elif sigma in key_special:
-            result[-1][0] += sigma
-        else:
-            return None
-    # 초성 ㄹ
-    elif q == 'q3':
-        if sigma in key_vowel:
-            result[-1][1] = sigma
-        else:
-            return None
-    # 초성 ㅇ
-    elif q == 'q4':
-        if sigma in key_vowel:
-            result[-1][1] = sigma
-        elif sigma == 'z':
-            result[-1][0] += sigma
-        else:
-            return None
-    # ㄱ + ㅏ + sigma
-    elif q == 'q5':
-        if sigma in key_consonant:
-            result.append([sigma, '', ''])
-        elif sigma in ['3', 'd', 'z']:
-            result[-1][1] += sigma
-        else:
-            return None
-    # ㄱ + ㅣ + sigma
-    elif q == 'q6':
-        if sigma in key_consonant:
-            result.append([sigma, '', ''])
-        else:
-            return None
-    # ㄱ + ㅗ + sigma
-    elif q == 'q7':
-        if sigma in key_consonant:
-            result.append([sigma, '', ''])
-        elif sigma in ['3', 'e', 'd', 'z']:
-            result[-1][1] += sigma
-        else:
-            return None
-    # ㄱ + ㅡ + sigma
-    elif q == 'q8':
-        if sigma in key_consonant:
-            result.append([sigma, '', ''])
-        elif sigma == 'd':
-            result[-1][1] += sigma
-        else:
-            return None
-    # ㄱ + ㅏ + ㄱ + sigma
-    elif q == 'q9':
-        if sigma == 'a':
-            result[-2][2] = result[-1][0]
-            result[-1][0] = sigma
-        elif sigma in key_consonant:
-            result[-2][2] = result[-1][0]
-            result[-1][0] = sigma
-        elif sigma in ['z', 'c']:
-            result[-1][0] += sigma
-        elif sigma in key_vowel:
-            result[-1][1] = sigma
-        else:
-            return None
-    # ㄱ + ㅏ + ㄴ + sigma
-    elif q == 'q10':
-        if sigma in key_special:
-            result[-1][0] += sigma
-        elif sigma in key_consonant:
-            result[-2][2] = result[-1][0]
-            result[-1][0] = sigma
-        elif sigma in key_vowel:
-            result[-1][1] = sigma
-        else:
-            return None
-    # ㄱ + ㅏ + ㅏ + sigma == ㄱ + ㅓ + sigma
-    elif q == 'q11':
-        if sigma in key_consonant:
-            result.append([sigma, '', ''])
-        elif sigma in ['d', 'z']:
-            result[-1][1] += sigma
-        else:
-            return None
-    # ㄱ + ㅏ + ㅅ + sigma
-    elif q == 'q12':
-        if sigma in ['z', 'c']:
-            result[-1][0] += sigma
-        elif sigma in key_consonant:
-            result[-2][2] = result[-1][0]
-            result[-1][0] = sigma
-        elif sigma in key_vowel:
-            result[-1][1] = sigma
-        else:
-            return None
-    # ㄱ + ㅏ + ㄹ + sigma
-    elif q == 'q13':
-        if sigma in ['1', 'a', 'w']:
-            result[-2][2] = result[-1][0]
-            result[-1][0] = sigma
-        elif sigma in key_consonant:
-            result[-2][2] = result[-1][0]
-            result[-1][0] = sigma
-        elif sigma in key_vowel:
-            result[-1][1] = sigma
-        else:
-            return None
-    # ㄱ + ㅏ + ㅇ + sigma
-    elif q == 'q14':
-        if sigma in ['z']:
-            result[-1][0] += sigma
-        elif sigma in key_consonant:
-            result[-2][2] = result[-1][0]
-            result[-1][0] = sigma
-        elif sigma in key_vowel:
-            result[-1][1] = sigma
-        else:
-            return None
-    # ㄱ + ㅏ + ㅁ + sigma
-    elif q == 'q15':
-        if sigma in key_vowel:
-            result[-1][1] = sigma
-        elif sigma in key_consonant:
-            result[-2][2] = result[-1][0]
-            result[-1][0] = sigma
-        elif sigma in ['z']:
-            result[-1][0] += sigma
-        else:
-            return None
-    # ㄱ + ㅗ + ㅗ + sigma == ㄱ + ㅜ + sigma
-    elif q == 'q16':
-        if sigma in key_consonant:
-            result.append([sigma, '', ''])
-        elif sigma in ['d', 'z']:
-            result[-1][1] += sigma
-        elif sigma == '3':
-            result.append(['', sigma, ''])
-        else:
-            return None
-    # ㄱ + ㅏ + ㄱ + ㅅ + sigma, 그 외에 두가지 경우가 더 있다.
-    elif q == 'q17':
-        if sigma in key_consonant:
-            result[-2][2] += result[-1][0]
-            result[-1][0] = sigma
-        elif sigma in key_vowel:
-            result[-1][1] = sigma
-        elif sigma in ['z', 'c']:
-            result[-1][0] += sigma
-    # ㄱ + ㅏ + ㄱ + 쌍 + sigma == ㄱ + ㅏ + ㄲ + sigma
-    elif q == 'q18':
-        # 쌍자음 안받침
-        if result[-1][1] == '' and result[-1][2] == '' and not result[-1][0] in jong_key:
+        # 초성 ㄱ, ㄴ, ㅁ, ㅅ, ㄹ, ㅇ
+        # ㄱ + ㅏ + ㄴ + ㅅ + sigma
+        # ㄱ + ㅏ + ㄴ + ㅇ + sigma
+        # ㄱ + ㅏ + ㄹ + ㄴ + sigma
+        # ㄱ + ㅗ + ㅗ + ㅏ + sigma == 구 + ㅏ + sigma, else가 무조건 none이 아니고 그냥 이상한 형태지만 입력이 될 수도 있을 것이다.
+        # ㄱ + ㅏ + ㄹ + ㄴ + 획 + sigma == 갈+ㄷ+sigma
+        elif q in ['q1', 'q2', 'q3', 'q4', 'q19', 'q20', 'q24', 'q27', 'q28']:
+            if 'c' in result[-1][0]:
+                erased = 1
+                result[-1][0] = result[-1][0][:-1]
+            else:
+                erased = len(result[-1][0])
+                result.pop()
+        # ㄱ + ㅏ + sigma
+        # ㄱ + ㅣ + sigma
+        # ㄱ + ㅗ + sigma
+        # ㄱ + ㅡ + sigma
+        # ㄱ + ㅏ + ㅏ + sigma == ㄱ + ㅓ + sigma
+        # ㄱ + ㅗ + ㅗ + sigma == ㄱ + ㅜ + sigma
+        elif q in ['q5', 'q6', 'q7', 'q8', 'q11', 'q16']:
+            if result[-1][1] in jung_double:
+                jung_first = jung_double_first[jung_double.index(result[-1][1])]
+                jung_second = jung_double_second[jung_double.index(result[-1][1])]
+                erased = len(jung_second)
+                result[-1][1] = jung_first
+            elif result[-1][1] in jung_triple:
+                jung_first = jung_triple_first[jung_triple.index(result[-1][1])]
+                jung_second = jung_triple_second[jung_triple.index(result[-1][1])]
+                jung_third = jung_triple_third[jung_triple.index(result[-1][1])]
+                erased = len(jung_third)
+                result[-1][1] = jung_first + jung_second
+            elif result[-1][1] in jung_key:
+                erased = len(result[-1][1])
+                result[-1][1] = ''
+                if len(result) == 1:
+                    pass
+                elif result[-2][2] + result[-1][0] in jong_key:
+                    result[-2][2] += result[-1][0]
+                    result.pop()
+        # 단일 받침
+        # ㄱ + ㅏ + ㄱ + sigma
+        # ㄱ + ㅏ + ㄴ + sigma
+        # ㄱ + ㅏ + ㅅ + sigma
+        # ㄱ + ㅏ + ㄹ + sigma
+        # ㄱ + ㅏ + ㅇ + sigma
+        # ㄱ + ㅏ + ㅁ + sigma
+        # ㄱ + ㅏ + ㄴ + 획 + sigma == ㄱ + ㅏ + ㄷ + sigma
+        # ㄱ + ㅏ + ㅁ + 획 + sigma == 갑 + sigma
+        elif q in ['q9', 'q10', 'q12', 'q13', 'q14', 'q15', 'q21', 'q26']:
+            erased = len(result[-1][2])
+            result[-1][2] = ''
+
+        # ㄱ + ㅏ + ㄱ + ㅅ + sigma, 그 외에 두가지 경우가 더 있다.
+        # ㄱ + ㅏ + ㄹ + ㄱ + sigma == ㄱ + ㅏ + ㄺ + sigma
+        # ㄱ + ㅏ + ㄹ + ㅁ + sigma == ㄱ + ㅏ + ㄻ + sigma
+        elif q in ['q17', 'q23', 'q25']:
+            batchim_first = batchim_double_first[batchim_double.index(result[-1][2])]
+            batchim_second = batchim_double_second[batchim_double.index(result[-1][2])]
+            erased = len(batchim_second)
+            result[-1][2] = batchim_first
+        # ㄱ + ㅏ + ㄱ + 쌍 + sigma == ㄱ + ㅏ + ㄲ + sigma
+        elif q == 'q18':
+            if result[-1][1] == '' and result[-1][2] == '':
+                erased = 1
+                result.pop()
+            # 쌍자음 받침
+            elif result[-1][2] in ['1c', 'ac']:
+                batchim_first = batchim_double_first[batchim_double.index(result[-1][2])]
+                batchim_second = batchim_double_second[batchim_double.index(result[-1][2])]
+                erased = len(batchim_second)
+                result[-1][2] = batchim_first
+            # 겹받침
+            elif result[-1][2] in jong_double:
+                batchim_first = batchim_double_first[batchim_double.index(result[-1][2])]
+                batchim_second = batchim_double_second[batchim_double.index(result[-1][2])]
+                erased = len(batchim_second)
+                result[-1][2] = batchim_first
+            # 마지막 글자의 종성이 겹받침도 아니고 쌍자음도 아니다.
+            elif result[-1][2] in jong_key:
+                erased = len(result[-1][2])
+                result[-1][2] = ''
+            else:
+                return None
+        # ㄱ + ㅏ + ㅅ + 획 + sigma == ㄱ + ㅏ + ㅈ + sigma , 21인 경우와 합쳐도 될 거 같다. 만약 여기에 추가할 분기가 없다면. % 있어~
+        elif q == 'q22':
+            if result[-1][2] in jong_double:
+                batchim_first = batchim_double_first[batchim_double.index(result[-1][2])]
+                batchim_second = batchim_double_second[batchim_double.index(result[-1][2])]
+                erased = len(batchim_second)
+                result[-1][2] = batchim_first
+            elif result[-1][2] in jong_key:
+                erased = len(result[-1][2])
+                result[-1][2] = ''
+            else:
+                return None
+    else:
+        # Initial state
+        if q == 'q0':
+            if sigma in key_consonant:
+                result.append([sigma, '', ''])
+            else:
+                return None
+        # 초성 ㄱ, ㄴ, ㅁ, ㅅ
+        elif q in ['q1', 'q2']:
+            if sigma in key_vowel:
+                result[-1][1] = sigma
+            elif sigma in key_special:
+                result[-1][0] += sigma
+            else:
+                return None
+        # 초성 ㄹ
+        elif q == 'q3':
             if sigma in key_vowel:
                 result[-1][1] = sigma
             else:
                 return None
-        # 쌍자음 받침
-        elif result[-1][2] in ['1c', 'ac']:
+        # 초성 ㅇ
+        elif q == 'q4':
+            if sigma in key_vowel:
+                result[-1][1] = sigma
+            elif sigma == 'z':
+                result[-1][0] += sigma
+            else:
+                return None
+        # ㄱ + ㅏ + sigma
+        elif q == 'q5':
             if sigma in key_consonant:
+                result.append([sigma, '', ''])
+            elif sigma in ['3', 'd', 'z']:
+                result[-1][1] += sigma
+            else:
+                return None
+        # ㄱ + ㅣ + sigma
+        elif q == 'q6':
+            if sigma in key_consonant:
+                result.append([sigma, '', ''])
+            else:
+                return None
+        # ㄱ + ㅗ + sigma
+        elif q == 'q7':
+            if sigma in key_consonant:
+                result.append([sigma, '', ''])
+            elif sigma in ['3', 'e', 'd', 'z']:
+                result[-1][1] += sigma
+            else:
+                return None
+        # ㄱ + ㅡ + sigma
+        elif q == 'q8':
+            if sigma in key_consonant:
+                result.append([sigma, '', ''])
+            elif sigma == 'd':
+                result[-1][1] += sigma
+            else:
+                return None
+        # ㄱ + ㅏ + ㄱ + sigma
+        elif q == 'q9':
+            if sigma == 'a':
+                result[-2][2] = result[-1][0]
+                result[-1][0] = sigma
+            elif sigma in key_consonant:
+                result[-2][2] = result[-1][0]
+                result[-1][0] = sigma
+            elif sigma in ['z', 'c']:
+                result[-1][0] += sigma
+            elif sigma in key_vowel:
+                result[-1][1] = sigma
+            else:
+                return None
+        # ㄱ + ㅏ + ㄴ + sigma
+        elif q == 'q10':
+            if sigma in key_special:
+                result[-1][0] += sigma
+            elif sigma in key_consonant:
                 result[-2][2] = result[-1][0]
                 result[-1][0] = sigma
             elif sigma in key_vowel:
                 result[-1][1] = sigma
             else:
                 return None
-        # 겹받침
-        elif result[-2][2]+result[-1][0] in jong_double:
+        # ㄱ + ㅏ + ㅏ + sigma == ㄱ + ㅓ + sigma
+        elif q == 'q11':
             if sigma in key_consonant:
-                result[-2][2] += result[-1][0]
+                result.append([sigma, '', ''])
+            elif sigma in ['d', 'z']:
+                result[-1][1] += sigma
+            else:
+                return None
+        # ㄱ + ㅏ + ㅅ + sigma
+        elif q == 'q12':
+            if sigma in ['z', 'c']:
+                result[-1][0] += sigma
+            elif sigma in key_consonant:
+                result[-2][2] = result[-1][0]
                 result[-1][0] = sigma
             elif sigma in key_vowel:
                 result[-1][1] = sigma
-            # sigma is special key
-            elif sigma in key_special:
-                result[-1][0] += sigma
             else:
                 return None
-        # 마지막 글자의 종성이 겹받침도 아니고 쌍자음도 아니다.
-        elif result[-1][0] in jong_key:
+        # ㄱ + ㅏ + ㄹ + sigma
+        elif q == 'q13':
+            if sigma in ['1', 'a', 'w']:
+                result[-2][2] = result[-1][0]
+                result[-1][0] = sigma
+            elif sigma in key_consonant:
+                result[-2][2] = result[-1][0]
+                result[-1][0] = sigma
+            elif sigma in key_vowel:
+                result[-1][1] = sigma
+            else:
+                return None
+        # ㄱ + ㅏ + ㅇ + sigma
+        elif q == 'q14':
+            if sigma in ['z']:
+                result[-1][0] += sigma
+            elif sigma in key_consonant:
+                result[-2][2] = result[-1][0]
+                result[-1][0] = sigma
+            elif sigma in key_vowel:
+                result[-1][1] = sigma
+            else:
+                return None
+        # ㄱ + ㅏ + ㅁ + sigma
+        elif q == 'q15':
             if sigma in key_vowel:
                 result[-1][1] = sigma
             elif sigma in key_consonant:
                 result[-2][2] = result[-1][0]
                 result[-1][0] = sigma
-            elif sigma in key_special:
+            elif sigma in ['z']:
                 result[-1][0] += sigma
             else:
                 return None
-        else:
-            return None
-    # ㄱ + ㅏ + ㄴ + ㅅ + sigma
-    elif q == 'q19':
-        if sigma in key_vowel:
-            result[-1][1] = sigma
-        elif sigma in key_special:
-            result[-1][0] += sigma
-        else:
-            return None
-    # ㄱ + ㅏ + ㄴ + ㅇ + sigma
-    elif q == 'q20':
-        if sigma in key_vowel:
-            result[-1][1] = sigma
-        elif sigma == 'z':
-            result[-1][0] += sigma
-        else:
-            return None
-    # ㄱ + ㅏ + ㄴ + 획 + sigma == ㄱ + ㅏ + ㄷ + sigma
-    elif q == 'q21':
-        if sigma in key_consonant:
-            result[-2][2] = result[-1][0]
-            result[-1][0] = sigma
-        elif sigma in key_vowel:
-            result[-1][1] = sigma
-        elif sigma in key_special:
-            result[-1][0] += sigma
-        else:
-            return None
-    # ㄱ + ㅏ + ㅅ + 획 + sigma == ㄱ + ㅏ + ㅈ + sigma , 21인 경우와 합쳐도 될 거 같다. 만약 여기에 추가할 분기가 없다면. % 있어~
-    elif q == 'q22':
-        if result[-2][2]+result[-1][0] in jong_double:
+        # ㄱ + ㅗ + ㅗ + sigma == ㄱ + ㅜ + sigma
+        elif q == 'q16':
+            if sigma in key_consonant:
+                result.append([sigma, '', ''])
+            elif sigma in ['d', 'z']:
+                result[-1][1] += sigma
+            elif sigma == '3':
+                result.append(['', sigma, ''])
+            else:
+                return None
+        # ㄱ + ㅏ + ㄱ + ㅅ + sigma, 그 외에 두가지 경우가 더 있다.
+        elif q == 'q17':
             if sigma in key_consonant:
                 result[-2][2] += result[-1][0]
                 result[-1][0] = sigma
             elif sigma in key_vowel:
                 result[-1][1] = sigma
+            elif sigma in ['z', 'c']:
+                result[-1][0] += sigma
+        # ㄱ + ㅏ + ㄱ + 쌍 + sigma == ㄱ + ㅏ + ㄲ + sigma
+        elif q == 'q18':
+            # 쌍자음 안받침
+            if result[-1][1] == '' and result[-1][2] == '' and not result[-1][0] in jong_key:
+                if sigma in key_vowel:
+                    result[-1][1] = sigma
+                else:
+                    return None
+            # 쌍자음 받침
+            elif result[-1][2] in ['1c', 'ac']:
+                if sigma in key_consonant:
+                    result[-2][2] = result[-1][0]
+                    result[-1][0] = sigma
+                elif sigma in key_vowel:
+                    result[-1][1] = sigma
+                else:
+                    return None
+            # 겹받침
+            elif result[-2][2]+result[-1][0] in jong_double:
+                if sigma in key_consonant:
+                    result[-2][2] += result[-1][0]
+                    result[-1][0] = sigma
+                elif sigma in key_vowel:
+                    result[-1][1] = sigma
+                # sigma is special key
+                elif sigma in key_special:
+                    result[-1][0] += sigma
+                else:
+                    return None
+            # 마지막 글자의 종성이 겹받침도 아니고 쌍자음도 아니다.
+            elif result[-1][0] in jong_key:
+                if sigma in key_vowel:
+                    result[-1][1] = sigma
+                elif sigma in key_consonant:
+                    result[-2][2] = result[-1][0]
+                    result[-1][0] = sigma
+                elif sigma in key_special:
+                    result[-1][0] += sigma
+                else:
+                    return None
+            else:
+                return None
+        # ㄱ + ㅏ + ㄴ + ㅅ + sigma
+        elif q == 'q19':
+            if sigma in key_vowel:
+                result[-1][1] = sigma
             elif sigma in key_special:
                 result[-1][0] += sigma
             else:
                 return None
-        elif result[-1][0] in jong_key:
+        # ㄱ + ㅏ + ㄴ + ㅇ + sigma
+        elif q == 'q20':
+            if sigma in key_vowel:
+                result[-1][1] = sigma
+            elif sigma == 'z':
+                result[-1][0] += sigma
+            else:
+                return None
+        # ㄱ + ㅏ + ㄴ + 획 + sigma == ㄱ + ㅏ + ㄷ + sigma
+        elif q == 'q21':
             if sigma in key_consonant:
                 result[-2][2] = result[-1][0]
                 result[-1][0] = sigma
@@ -1034,64 +875,86 @@ def action_func_chosung(q, sigma):
                 result[-1][0] += sigma
             else:
                 return None
-        else:
-            return None
-    # ㄱ + ㅏ + ㄹ + ㄱ + sigma == ㄱ + ㅏ + ㄺ + sigma
-    elif q == 'q23':
-        if sigma in key_consonant:
-            result[-2][2] += result[-1][0]
-            result[-1][0] = sigma
-        elif sigma in key_vowel:
-            result[-1][1] = sigma
-        elif sigma in key_special:
-            result[-1][0] += sigma
-        else:
-            return None
-    # ㄱ + ㅏ + ㄹ + ㄴ + sigma
-    elif q == 'q24':
-        if sigma in key_vowel:
-            result[-1][1] = sigma
-        elif sigma == 'z':
-            result[-1][0] += sigma
-        else:
-            return None
-    # ㄱ + ㅏ + ㄹ + ㅁ + sigma == ㄱ + ㅏ + ㄻ + sigma
-    elif q == 'q25':
-        if sigma in key_consonant:
-            result[-2][2] += result[-1][0]
-            result[-1][0] = sigma
-        elif sigma in key_vowel:
-            result[-1][1] = sigma
-        elif sigma == 'z':
-            result[-1][0] += sigma
-        else:
-            return None
-    # ㄱ + ㅏ + ㅁ + 획 + sigma == 갑 + sigma
-    elif q == 'q26':
-        if sigma in key_consonant:
-            result[-2][2] = result[-1][0]
-            result[-1][0] = sigma
-        elif sigma in key_vowel:
-            result[-1][1] = sigma
-        elif sigma in key_special:
-            result[-1][0] += sigma
-        else:
-            return None
-    # ㄱ + ㅗ + ㅗ + ㅏ + sigma == 구 + ㅏ + sigma, else가 무조건 none이 아니고 그냥 이상한 형태지만 입력이 될 수도 있을 것이다.
-    elif q == 'q27':
-        if sigma == '3':
-            result[-2][1] += result[-1][1]+sigma
-            result.pop()
-        else:
-            return None
-    # ㄱ + ㅏ + ㄹ + ㄴ + 획 + sigma == 갈+ㄷ+sigma
-    elif q == 'q28':
-        if sigma in key_vowel:
-            result[-1][1] = sigma
-        elif sigma in key_special:
-            result[-1][0] += sigma
-        else:
-            return None
+        # ㄱ + ㅏ + ㅅ + 획 + sigma == ㄱ + ㅏ + ㅈ + sigma , 21인 경우와 합쳐도 될 거 같다. 만약 여기에 추가할 분기가 없다면. % 있어~
+        elif q == 'q22':
+            if result[-2][2]+result[-1][0] in jong_double:
+                if sigma in key_consonant:
+                    result[-2][2] += result[-1][0]
+                    result[-1][0] = sigma
+                elif sigma in key_vowel:
+                    result[-1][1] = sigma
+                elif sigma in key_special:
+                    result[-1][0] += sigma
+                else:
+                    return None
+            elif result[-1][0] in jong_key:
+                if sigma in key_consonant:
+                    result[-2][2] = result[-1][0]
+                    result[-1][0] = sigma
+                elif sigma in key_vowel:
+                    result[-1][1] = sigma
+                elif sigma in key_special:
+                    result[-1][0] += sigma
+                else:
+                    return None
+            else:
+                return None
+        # ㄱ + ㅏ + ㄹ + ㄱ + sigma == ㄱ + ㅏ + ㄺ + sigma
+        elif q == 'q23':
+            if sigma in key_consonant:
+                result[-2][2] += result[-1][0]
+                result[-1][0] = sigma
+            elif sigma in key_vowel:
+                result[-1][1] = sigma
+            elif sigma in key_special:
+                result[-1][0] += sigma
+            else:
+                return None
+        # ㄱ + ㅏ + ㄹ + ㄴ + sigma
+        elif q == 'q24':
+            if sigma in key_vowel:
+                result[-1][1] = sigma
+            elif sigma == 'z':
+                result[-1][0] += sigma
+            else:
+                return None
+        # ㄱ + ㅏ + ㄹ + ㅁ + sigma == ㄱ + ㅏ + ㄻ + sigma
+        elif q == 'q25':
+            if sigma in key_consonant:
+                result[-2][2] += result[-1][0]
+                result[-1][0] = sigma
+            elif sigma in key_vowel:
+                result[-1][1] = sigma
+            elif sigma == 'z':
+                result[-1][0] += sigma
+            else:
+                return None
+        # ㄱ + ㅏ + ㅁ + 획 + sigma == 갑 + sigma
+        elif q == 'q26':
+            if sigma in key_consonant:
+                result[-2][2] = result[-1][0]
+                result[-1][0] = sigma
+            elif sigma in key_vowel:
+                result[-1][1] = sigma
+            elif sigma in key_special:
+                result[-1][0] += sigma
+            else:
+                return None
+        # ㄱ + ㅗ + ㅗ + ㅏ + sigma == 구 + ㅏ + sigma, else가 무조건 none이 아니고 그냥 이상한 형태지만 입력이 될 수도 있을 것이다.
+        elif q == 'q27':
+            if sigma == '3':
+                result[-2][1] += result[-1][1]+sigma
+                result.pop()
+            else:
+                return None
+        # ㄱ + ㅏ + ㄹ + ㄴ + 획 + sigma == 갈+ㄷ+sigma
+        elif q == 'q28':
+            if sigma in key_vowel:
+                result[-1][1] = sigma
+            elif sigma in key_special:
+                result[-1][0] += sigma
+            else:
+                return None
     # Success
     return 0
 
@@ -1112,9 +975,10 @@ def convert_to_kor(nara_char):
 
 
 while True:
-    print('Type hangul to get right result. Type invalid hangul or ; to exit')
+    print('Type hangul to get right result. Type "exit" to exit')
     eng_in = input()
-
+    if eng_in == 'exit':
+        break
     eng_in_temp = []
     # DEBUG
     for i in range(len(eng_in)):
@@ -1123,7 +987,8 @@ while True:
         eng_in_temp = eng_in[:i+1]
         current_state = 'q0'
         for letter in eng_in_temp:
-            print(current_state, end=', ')
+            # print(current_state, end=', ')
+            print(state[-5:], end=' | ')
             if batchim:
                 action_func(current_state, letter)
             else:
@@ -1142,6 +1007,7 @@ while True:
                 print(chr(44032 + 588 * cho_key.index(geulja[0]) + 28 * jung_key.index(geulja[1]) + jong_key.index(geulja[2])), end=''),
         print('')
         result = []
+        state = ['q0']
         incomplete = []
     # print('exit')
     # break
