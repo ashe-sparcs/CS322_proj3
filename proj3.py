@@ -59,8 +59,8 @@ batchim_double_second = ['a', 'az', 'sz', '1', 'w', 'wz', 'a', '2zz', 'wzz', 'sz
 state = ['q0']
 result = []
 erased = 0
-#batchim = False
-batchim = True
+batchim = False
+#batchim = True
 
 
 def state_transition_func(q, sigma):
@@ -568,6 +568,11 @@ def action_func_chosung(q, sigma):
             else:
                 erased = len(result[-1][0])
                 result.pop()
+                if not result == [] and result[-1][2] in jong_double:
+                    jong_first = jong_double_first[jong_double.index(result[-1][2])]
+                    jong_second = jong_double_second[jong_double.index(result[-1][2])]
+                    result[-1][2] = jong_first
+                    result.append([jong_second, '', ''])
         # ㄱ + ㅏ + sigma
         # ㄱ + ㅣ + sigma
         # ㄱ + ㅗ + sigma
@@ -589,11 +594,6 @@ def action_func_chosung(q, sigma):
             elif result[-1][1] in jung_key:
                 erased = len(result[-1][1])
                 result[-1][1] = ''
-                if len(result) == 1:
-                    pass
-                elif result[-2][2] + result[-1][0] in jong_key:
-                    result[-2][2] += result[-1][0]
-                    result.pop()
         # 단일 받침
         # ㄱ + ㅏ + ㄱ + sigma
         # ㄱ + ㅏ + ㄴ + sigma
@@ -604,50 +604,43 @@ def action_func_chosung(q, sigma):
         # ㄱ + ㅏ + ㄴ + 획 + sigma == ㄱ + ㅏ + ㄷ + sigma
         # ㄱ + ㅏ + ㅁ + 획 + sigma == 갑 + sigma
         elif q in ['q9', 'q10', 'q12', 'q13', 'q14', 'q15', 'q21', 'q26']:
-            erased = len(result[-1][2])
-            result[-1][2] = ''
+            if 'c' in result[-1][0]:
+                erased = 1
+                result[-1][0] = result[-1][0][:-1]
+            else:
+                erased = len(result[-1][0])
+                result.pop()
 
         # ㄱ + ㅏ + ㄱ + ㅅ + sigma, 그 외에 두가지 경우가 더 있다.
         # ㄱ + ㅏ + ㄹ + ㄱ + sigma == ㄱ + ㅏ + ㄺ + sigma
         # ㄱ + ㅏ + ㄹ + ㅁ + sigma == ㄱ + ㅏ + ㄻ + sigma
         elif q in ['q17', 'q23', 'q25']:
-            batchim_first = batchim_double_first[batchim_double.index(result[-1][2])]
-            batchim_second = batchim_double_second[batchim_double.index(result[-1][2])]
-            erased = len(batchim_second)
-            result[-1][2] = batchim_first
-        # ㄱ + ㅏ + ㄱ + 쌍 + sigma == ㄱ + ㅏ + ㄲ + sigma
-        elif q == 'q18':
-            if result[-1][1] == '' and result[-1][2] == '':
+            if 'c' in result[-1][0]:
                 erased = 1
-                result.pop()
-            # 쌍자음 받침
-            elif result[-1][2] in ['1c', 'ac']:
-                batchim_first = batchim_double_first[batchim_double.index(result[-1][2])]
-                batchim_second = batchim_double_second[batchim_double.index(result[-1][2])]
-                erased = len(batchim_second)
-                result[-1][2] = batchim_first
-            # 겹받침
-            elif result[-1][2] in jong_double:
-                batchim_first = batchim_double_first[batchim_double.index(result[-1][2])]
-                batchim_second = batchim_double_second[batchim_double.index(result[-1][2])]
-                erased = len(batchim_second)
-                result[-1][2] = batchim_first
-            # 마지막 글자의 종성이 겹받침도 아니고 쌍자음도 아니다.
-            elif result[-1][2] in jong_key:
-                erased = len(result[-1][2])
-                result[-1][2] = ''
+                result[-1][0] = result[-1][0][:-1]
             else:
-                return None
+                erased = len(result[-1][0])
+                result[-1][0] = result[-2][2]
+                result[-2][2] = ''
+        # ㄱ + ㅏ + ㄱ + 쌍 + sigma == ㄱ + ㅏ + ㄲ + sigma
         # ㄱ + ㅏ + ㅅ + 획 + sigma == ㄱ + ㅏ + ㅈ + sigma , 21인 경우와 합쳐도 될 거 같다. 만약 여기에 추가할 분기가 없다면. % 있어~
-        elif q == 'q22':
-            if result[-1][2] in jong_double:
-                batchim_first = batchim_double_first[batchim_double.index(result[-1][2])]
-                batchim_second = batchim_double_second[batchim_double.index(result[-1][2])]
-                erased = len(batchim_second)
-                result[-1][2] = batchim_first
-            elif result[-1][2] in jong_key:
-                erased = len(result[-1][2])
-                result[-1][2] = ''
+        elif q in ['q18', 'q22']:
+            if 'c' in result[-1][0]:
+                erased = 1
+                result[-1][0] = result[-1][0][:-1]
+            elif result[-2][2] == '':
+                erased = len(result[-1][0])
+                result.pop()
+            elif result[-2][2] in jong_double:
+                jong_first = jong_double_first[jong_double.index(result[-2][2])]
+                jong_second = jong_double_second[jong_double.index(result[-2][2])]
+                erased = len(result[-1][0])
+                result[-2][2] = jong_first
+                result[-1][0] = jong_second
+            elif result[-2][2] in jong_key:
+                erased = len(result[-1][0])
+                result[-1][0] = result[-2][2]
+                result[-2][2] = ''
             else:
                 return None
     else:
@@ -987,8 +980,8 @@ while True:
         eng_in_temp = eng_in[:i+1]
         current_state = 'q0'
         for letter in eng_in_temp:
-            # print(current_state, end=', ')
-            print(state[-5:], end=' | ')
+            print(current_state, end=', ')
+            # print(state[-5:], end=' | ')
             if batchim:
                 action_func(current_state, letter)
             else:
