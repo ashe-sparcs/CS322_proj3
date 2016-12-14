@@ -59,8 +59,8 @@ batchim_double_second = ['a', 'az', 'sz', '1', 'w', 'wz', 'a', '2zz', 'wzz', 'sz
 state = ['q0']
 result = []
 erased = 0
-batchim = False
-#batchim = True
+#batchim = False
+batchim = True
 
 
 def state_transition_func(q, sigma):
@@ -974,17 +974,20 @@ def convert_to_kor(nara_char):
         print('convert error')
     return kor_char
 
-
+print('c를 입력하여 받침우선 대신 초성우선을 사용하실 수 있습니다. 또는 아무 문자나 입력하여 받침우선을 사용합니다.')
+mode_in = input()
+if mode_in == 'c':
+    batchim = False
 while True:
-    print('Type hangul to get right result. Type "exit" to exit')
+    print('한글을 입력하세요(123/qwe/asd/zxc 나랏글자판). exit을 입력하여 종료합니다.')
     eng_in = input()
     if eng_in == 'exit':
         break
     eng_in_temp = []
     # DEBUG
-    for i in range(len(eng_in)):
+    # for i in range(len(eng_in)):
     # SUBMISSION
-    # for i in range(len(eng_in)-1, len(eng_in)):
+    for i in range(len(eng_in)-1, len(eng_in)):
         eng_in_temp = eng_in[:i+1]
         current_state = 'q0'
         for letter in eng_in_temp:
